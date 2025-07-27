@@ -18,12 +18,18 @@ class ThirukkuralController extends Controller
 
     public function search(Request $request)
     {
-        $word = $request->input('word');
-        $thirukkurals = Thirukkural::where('Kural', 'like', "%$word%")
-            ->orWhere('Vilakam', 'like', "%$word%")
-            ->orWhere('number', 'like', "%$word%")
-            ->orWhere('Transliteration', 'like', "%$word%")
-            ->get();
+        $word = trim($request->input('word'));
+        $query = Thirukkural::query();
+
+        // Exact match for numeric input
+        if (is_numeric($word)) {
+           $query->orWhere('number', '=', $word);
+        }
+
+        $query->orWhere('Kural', 'like', "%$word%")
+          ->orWhere('Vilakam', 'like', "%$word%")
+          ->orWhere('Transliteration', 'like', "%$word%");
+        $thirukkurals = $query->take(50)->get();
         return response()->json($thirukkurals);
     }
 }
